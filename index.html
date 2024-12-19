@@ -196,6 +196,11 @@
         document.getElementById("serveCustomerBtn").addEventListener("click", () => {
             if (visitors > 0) {
                 visitors--;
+                experience++; // Увеличиваем опыт при обслуживании клиента
+                if (experience >= level * 10) {
+                    level++; // Увеличиваем уровень, когда накоплено достаточно опыта
+                    experience = 0; // Сбрасываем опыт на 0
+                }
                 locations.forEach(location => {
                     if (location.currentVisitors > 0) {
                         location.currentVisitors--;

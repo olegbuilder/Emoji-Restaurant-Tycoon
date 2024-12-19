@@ -95,10 +95,10 @@
 
         <div id="locations" class="location">
             <h2>Локации</h2>
-            <p id="location1">🎪 Базовая локация (Еда: 🥫🥘🧆) | Повара: <span id="location1Chefs">0/3</span></p>
-            <p id="location2" class="location-disabled">🏪 Локация "Гол" (Уровень 3) | Повара: <span id="location2Chefs">0/5</span></p>
-            <p id="location3" class="location-disabled">🏯 Локация "Стадион" (Уровень 6) | Повара: <span id="location3Chefs">0/7</span></p>
-            <p id="location4" class="location-disabled">🕌 Локация "Ресторан" (Уровень 10) | Повара: <span id="location4Chefs">0/10</span></p>
+            <p id="location1">🎪 Базовая локация (Еда: 🥫🥘🧆) | Повара: <span id="location1Chefs">0/3</span> | Места: <span id="location1Seats">10</span></p>
+            <p id="location2" class="location-disabled">🏪 Локация "Гол" (Уровень 3) | Повара: <span id="location2Chefs">0/5</span> | Места: <span id="location2Seats">5</span></p>
+            <p id="location3" class="location-disabled">🏯 Локация "Стадион" (Уровень 6) | Повара: <span id="location3Chefs">0/7</span> | Места: <span id="location3Seats">7</span></p>
+            <p id="location4" class="location-disabled">🕌 Локация "Ресторан" (Уровень 10) | Повара: <span id="location4Chefs">0/10</span> | Места: <span id="location4Seats">3</span></p>
         </div>
 
         <!-- Нижний квадрат с посетителями -->
@@ -115,16 +115,15 @@
         let experience = 0;
         let chefs = [];
         let visitors = 0;
-        let vipVisitor = false;
         let currentVisitor = false;
-        let visitorTimer;
+        let vipVisitor = false;
 
-        // Локации
+        // Локации с количеством мест для посетителей
         const locations = [
-            { name: 'Базовая локация', level: 1, food: ['🥫', '🥘', '🧆'], maxChefs: 3, chefsCount: 0 },
-            { name: 'Локация "Гол"', level: 3, food: ['🍱', '🍲', '🥗'], maxChefs: 5, chefsCount: 0 },
-            { name: 'Локация "Стадион"', level: 6, food: ['🥣', '🍛', '🍲'], maxChefs: 7, chefsCount: 0 },
-            { name: 'Локация "Ресторан"', level: 10, food: ['🍜', '🥮', '🥡'], maxChefs: 10, chefsCount: 0 }
+            { name: 'Базовая локация', level: 1, food: ['🥫', '🥘', '🧆'], maxChefs: 3, chefsCount: 0, maxSeats: 10, currentVisitors: 0 },
+            { name: 'Локация "Гол"', level: 3, food: ['🍱', '🍲', '🥗'], maxChefs: 5, chefsCount: 0, maxSeats: 5, currentVisitors: 0 },
+            { name: 'Локация "Стадион"', level: 6, food: ['🥣', '🍛', '🍲'], maxChefs: 7, chefsCount: 0, maxSeats: 7, currentVisitors: 0 },
+            { name: 'Локация "Ресторан"', level: 10, food: ['🍜', '🥮', '🥡'], maxChefs: 10, chefsCount: 0, maxSeats: 3, currentVisitors: 0 }
         ];
 
         // Обновление интерфейса
@@ -136,8 +135,7 @@
 
             // Обновляем количество поваров в локациях
             locations.forEach((location, index) => {
-                const locationElement = document.getElementById(`location${index + 1}`);
-                locationElement.innerHTML = `${location.name} (Еда: ${location.food.join(' ')}) | Повара: <span id="location${index + 1}Chefs">${location.chefsCount}/${location.maxChefs}</span>`;
+                document.getElementById(`location${index + 1}`).innerHTML = `${location.name} (Еда: ${location.food.join(' ')}) | Повара: <span id="location${index + 1}Chefs">${location.chefsCount}/${location.maxChefs}</span> | Места: <span id="location${index + 1}Seats">${location.maxSeats - location.currentVisitors}</span>`;
             });
 
             // Обновляем количество посетителей
@@ -145,7 +143,7 @@
             document.getElementById("vipStatus").textContent = vipVisitor ? "VIP клиент: Да" : "VIP клиент: Нет";
 
             // Активируем кнопку обслуживания только если есть посетители
-            document.getElementById("serveCustomerBtn").disabled = !currentVisitor;
+            document.getElementById("serveCustomerBtn").disabled = visitors === 0;
         }
 
         // Нанять повара
@@ -165,13 +163,12 @@
 
         // Обслужить клиента
         document.getElementById("serveCustomerBtn").addEventListener("click", () => {
-            if (currentVisitor) {
+            if (visitors > 0) {
                 const chance = Math.random();
                 if (chance > 0.5) {
                     coins += 10;
                     experience += 2;
-                    visitors += 1;
-                    currentVisitor = false;
+                    visitors -= 1;
                     updateUI();
                     alert("Вы обслужили клиента!");
                 } else {
@@ -189,20 +186,4 @@
 
         // Функция появления посетителей
         function spawnVisitor() {
-            if (!currentVisitor) {
-                currentVisitor = true;
-                updateUI();
-            }
-        }
-
-        // Функция появления VIP клиента
-        function spawnVIP() {
-            if (!vipVisitor) {
-                vipVisitor = true;
-                alert("Прийшол вип клиент!");
-            }
-        }
-
-        // Таймер для появления посетителей и VIP клиента
-        setInterval(spawnVisitor, 10000); // Посетитель появляется каждые 10 секунд
-        setInterval(spawn
+            locations.forEach(location

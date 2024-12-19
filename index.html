@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Idle Restaurant</title>
+    <title>Idle Restaurants</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f9f9f9;
             margin: 0;
             padding: 0;
+            background-color: #f0f0f0;
         }
         .container {
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
-            background: #fff;
+            background: white;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
-            font-size: 2.5em;
+            font-size: 2em;
         }
         button {
-            font-size: 1.2em;
-            padding: 12px 20px;
+            font-size: 1.5em;
+            padding: 15px 30px;
             margin: 10px;
             background-color: #007bff;
             color: white;
@@ -37,110 +37,162 @@
         button:hover {
             background-color: #0056b3;
         }
-        .location {
-            font-size: 1.2em;
-            margin-top: 20px;
-            cursor: pointer;
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
-        .location-disabled {
-            color: #ccc;
+        .player, .chef {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .player:hover, .chef:hover {
+            background: #007bff;
+            color: white;
         }
         .level-bar {
             margin: 20px 0;
             background: #e0e0e0;
             border-radius: 10px;
-            height: 20px;
+            overflow: hidden;
+            height: 30px;
             width: 100%;
         }
         #levelBar {
-            background: green;
             height: 100%;
+            background: green;
             width: 0%;
             transition: width 0.5s;
+        }
+        .location {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+        .location p {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Idle Restaurant</h1>
-        <p>Монеты: <span id="coins">10</span> | Уровень: <span id="level">1</span></p>
+        <h1>Idle Restaurants</h1>
+        <p>Монеты: <span id="coins">10</span> | Уровень: <span id="level">1</span> | Опыт: <span id="experience">0</span></p>
         <div class="level-bar">
             <div id="levelBar"></div>
         </div>
+        <button id="hireChefBtn">Нанять повара</button>
+        <button id="earnCoinsBtn">Получить монеты (50/50)</button>
+        <button id="dailyRewardBtn">Ежедневная награда</button>
 
-        <button id="serveCustomerBtn">Обслужить клиента (1 монета)</button>
-        <button id="buyCoinsBtn">Купить монеты (за 1$)</button>
+        <div id="chefCollection" class="location">
+            <h2>Повар (Наймите повара)</h2>
+            <p>Пока нет поваров</p>
+        </div>
 
-        <h2>Локации</h2>
-        <div id="location1" class="location">🎪 Базовая локация</div>
-        <div id="location2" class="location location-disabled">🏪 Локация "Вторая" (Уровень 3)</div>
-        <div id="location3" class="location location-disabled">🏯 Локация "Третья" (Уровень 6)</div>
-        <div id="location4" class="location location-disabled">🕌 Локация "Четвертая" (Уровень 10)</div>
+        <div id="locations" class="location">
+            <h2>Локации</h2>
+            <p id="location1">🎪 Базовая локация (Еда: 🥫🥘🧆)</p>
+            <p id="location2" class="location-disabled">🏪 Локация "Гол" (Уровень 3)</p>
+            <p id="location3" class="location-disabled">🏯 Локация "Стадион" (Уровень 6)</p>
+            <p id="location4" class="location-disabled">🕌 Локация "Ресторан" (Уровень 10)</p>
+        </div>
+
+        <div id="playersCollection" class="location">
+            <h2>Коллекция игроков</h2>
+            <p>Пока пусто</p>
+        </div>
     </div>
 
     <script>
         let coins = 10;
         let level = 1;
         let experience = 0;
-
-        const coinsElement = document.getElementById("coins");
-        const levelElement = document.getElementById("level");
-        const levelBar = document.getElementById("levelBar");
+        let chefs = [];
+        let players = [];
+        let locations = [
+            { name: 'Базовая локация', level: 1, food: ['🥫', '🥘', '🧆'] },
+            { name: 'Локация "Гол"', level: 3, food: ['🍱', '🍲', '🥗'] },
+            { name: 'Локация "Стадион"', level: 6, food: ['🥣', '🍛', '🍲'] },
+            { name: 'Локация "Ресторан"', level: 10, food: ['🍜', '🥮', '🥡'] }
+        ];
 
         // Обновление интерфейса
         function updateUI() {
-            coinsElement.textContent = coins;
-            levelElement.textContent = level;
-            levelBar.style.width = `${(experience % 10) * 10}%`;
+            document.getElementById("coins").textContent = coins;
+            document.getElementById("level").textContent = level;
+            document.getElementById("experience").textContent = experience;
+            document.getElementById("levelBar").style.width = `${(experience % 10) * 10}%`;
+
+            // Обновляем поваров
+            const chefCollection = document.getElementById("chefCollection");
+            chefCollection.innerHTML = "<h2>Повар (Наймите повара)</h2>";
+            chefs.forEach((chef, index) => {
+                const chefDiv = document.createElement("div");
+                chefDiv.className = "chef";
+                chefDiv.textContent = chef.name;
+                chefDiv.addEventListener("click", () => {
+                    alert(`Вы наняли повара: ${chef.name}`);
+                });
+                chefCollection.appendChild(chefDiv);
+            });
+
+            // Обновляем коллекцию игроков
+            const playersCollection = document.getElementById("playersCollection");
+            playersCollection.innerHTML = "<h2>Коллекция игроков</h2>";
+            players.forEach((player, index) => {
+                const playerDiv = document.createElement("div");
+                playerDiv.className = "player";
+                playerDiv.textContent = player;
+                playersCollection.appendChild(playerDiv);
+            });
+
+            if (players.length === 0) {
+                playersCollection.innerHTML += "<p>Пока пусто</p>";
+            }
         }
 
-        // Обслуживание клиента
-        document.getElementById("serveCustomerBtn").addEventListener("click", () => {
-            if (coins >= 1) {
-                coins -= 1;
-                experience += 1;
-                checkLevelUp();
+        // Нанять повара
+        document.getElementById("hireChefBtn").addEventListener("click", () => {
+            if (coins >= 5) {
+                coins -= 5;
+                const newChef = { name: "🧑‍🍳", efficiency: 1 };
+                chefs.push(newChef);
                 updateUI();
-                alert("Вы обслужили клиента!");
             } else {
-                alert("Недостаточно монет!");
+                alert("Недостаточно монет для найма повара.");
             }
         });
 
-        // Функция повышения уровня
-        function checkLevelUp() {
-            if (experience >= 10) {
-                level += 1;
-                experience = 0; // Сброс опыта после повышения уровня
-                alert(`Вы достигли уровня ${level}!`);
-                unlockLocations();
+        // Получить монеты
+        document.getElementById("earnCoinsBtn").addEventListener("click", () => {
+            const chance = Math.random();
+            if (chance > 0.5) {
+                coins += 10;
+                experience += 2;
+                updateUI();
+                alert("Вы выиграли 10 монет!");
+            } else {
+                alert("Неудача! Попробуйте снова.");
             }
-        }
+        });
 
-        // Разблокировка локаций
-        function unlockLocations() {
-            if (level >= 3) {
-                document.getElementById("location2").classList.remove("location-disabled");
-            }
-            if (level >= 6) {
-                document.getElementById("location3").classList.remove("location-disabled");
-            }
-            if (level >= 10) {
-                document.getElementById("location4").classList.remove("location-disabled");
-            }
-        }
-
-        // Покупка монет
-        document.getElementById("buyCoinsBtn").addEventListener("click", () => {
-            coins += 5;
+        // Ежедневная награда
+        document.getElementById("dailyRewardBtn").addEventListener("click", () => {
+            coins += 20;
             updateUI();
-            alert("Вы купили 5 монет!");
+            alert("Вы получили ежедневную награду: 20 монет!");
         });
 
-        // Инициализация
+        // Инициализация интерфейса
         updateUI();
     </script>
-
 </body>
-  </html>
+</html>

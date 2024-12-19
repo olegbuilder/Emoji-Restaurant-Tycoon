@@ -76,8 +76,10 @@
         </div>
         <div class="status">
             <p>Посетители: <span id="visitorsCount">0</span> | VIP клиент: <span id="vipStatus">Нет</span></p>
+            <p>Поваров: <span id="chefsCount">0</span> / <span id="maxChefs">3</span></p>
         </div>
         <button id="serveCustomerBtn" disabled>Обслужить клиента</button>
+        <button id="hireChefBtn">Нанять повара (5 монет)</button>
         <button id="dailyRewardBtn">Ежедневная награда</button>
         <div id="locations">
             <h2>Локации</h2>
@@ -101,6 +103,9 @@
         let visitors = 0;
         let vipVisitor = false;
 
+        const maxChefs = locations[0].maxChefs;
+        let chefsCount = locations[0].chefsCount;
+
         // Обновление интерфейса
         function updateUI() {
             document.getElementById("coins").textContent = coins;
@@ -110,8 +115,11 @@
 
             document.getElementById("visitorsCount").textContent = visitors;
             document.getElementById("vipStatus").textContent = vipVisitor ? "Да" : "Нет";
+            document.getElementById("chefsCount").textContent = chefsCount;
+            document.getElementById("maxChefs").textContent = maxChefs;
 
             document.getElementById("serveCustomerBtn").disabled = visitors === 0;
+            document.getElementById("hireChefBtn").disabled = chefsCount >= maxChefs || coins < 5;
         }
 
         // Появление клиентов
@@ -138,6 +146,18 @@
                 experience++;
                 vipVisitor = false;
                 updateUI();
+            }
+        });
+
+        // Нанять повара
+        document.getElementById("hireChefBtn").addEventListener("click", () => {
+            if (coins >= 5 && chefsCount < maxChefs) {
+                coins -= 5;
+                chefsCount++;
+                updateUI();
+                alert("Вы наняли нового повара!");
+            } else {
+                alert("Невозможно нанять больше поваров!");
             }
         });
 

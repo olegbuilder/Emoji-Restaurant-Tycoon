@@ -90,7 +90,7 @@
 
         <div id="chefCollection" class="location">
             <h2>Повар (Наймите повара)</h2>
-            <p>Пока нет поваров</p>
+            <p id="chefList">Пока нет поваров</p>
         </div>
 
         <div id="locations" class="location">
@@ -117,6 +117,7 @@
         let visitors = 0;
         let currentVisitor = false;
         let vipVisitor = false;
+        let dailyRewardCollected = false;
 
         // Локации с количеством мест для посетителей
         const locations = [
@@ -138,6 +139,14 @@
                 document.getElementById(`location${index + 1}`).innerHTML = `${location.name} (Еда: ${location.food.join(' ')}) | Повара: <span id="location${index + 1}Chefs">${location.chefsCount}/${location.maxChefs}</span> | Места: <span id="location${index + 1}Seats">${location.maxSeats - location.currentVisitors}</span>`;
             });
 
+            // Обновляем список поваров
+            const chefListElement = document.getElementById("chefList");
+            if (chefs.length > 0) {
+                chefListElement.innerHTML = chefs.map(chef => `<span>${chef.name}</span>`).join(", ");
+            } else {
+                chefListElement.innerHTML = "Пока нет поваров";
+            }
+
             // Обновляем количество посетителей
             document.getElementById("visitorsCount").textContent = visitors;
             document.getElementById("vipStatus").textContent = vipVisitor ? "VIP клиент: Да" : "VIP клиент: Нет";
@@ -149,13 +158,16 @@
         // Нанять повара
         document.getElementById("hireChefBtn").addEventListener("click", () => {
             if (coins >= 5) {
-                coins -= 5;
-                const newChef = { name: "🧑‍🍳", efficiency: 1 };
-                chefs.push(newChef);
-
-                // Добавляем повара в одну из локаций
-                locations[0].chefsCount++;  // Добавляем повара в базовую локацию (по умолчанию)
-                updateUI();
+                const availableLocation = locations.find(location => location.chefsCount < location.maxChefs);
+                if (availableLocation) {
+                    coins -= 5;
+                    const newChef = { name: "🧑‍🍳", efficiency: 1 };
+                    chefs.push(newChef);
+                    availableLocation.chefsCount++;
+                    updateUI();
+                } else {
+                    alert("Нет места для найма повара в доступных локациях.");
+                }
             } else {
                 alert("Недостаточно монет для найма повара.");
             }
@@ -163,46 +175,4 @@
 
         // Обслужить клиента
         document.getElementById("serveCustomerBtn").addEventListener("click", () => {
-            if (visitors > 0) {
-                const chance = Math.random();
-                if (chance > 0.5) {
-                    coins += 10;
-                    experience += 2;
-                    visitors -= 1;
-                    updateUI();
-                    alert("Вы обслужили клиента!");
-                } else {
-                    alert("Неудача! Попробуйте снова.");
-                }
-            }
-        });
-
-        // Ежедневная награда
-        document.getElementById("dailyRewardBtn").addEventListener("click", () => {
-            coins += 20;
-            updateUI();
-            alert("Вы получили ежедневную награду: 20 монет!");
-        });
-
-        // Функция появления посетителей
-        function spawnVisitor() {
-            // Проверяем, есть ли свободные места
-            for (let i = 0; i < locations.length; i++) {
-                const location = locations[i];
-                if (location.currentVisitors < location.maxSeats) {
-                    location.currentVisitors++;
-                    visitors++;
-                    updateUI();
-                    break;
-                }
-            }
-
-            // Время появления посетителей - каждые 5 секунд
-            setTimeout(spawnVisitor, 5000);
-        }
-
-        // Запускаем появления посетителей
-        spawnVisitor();
-    </script>
-</body>
-    </html>
+            if (visitors > 0)

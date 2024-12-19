@@ -155,24 +155,22 @@
             document.getElementById("serveCustomerBtn").disabled = visitors === 0;
         }
 
-        // Нанять повара
-        document.getElementById("hireChefBtn").addEventListener("click", () => {
-            if (coins >= 5) {
-                const availableLocation = locations.find(location => location.chefsCount < location.maxChefs);
-                if (availableLocation) {
-                    coins -= 5;
-                    const newChef = { name: "🧑‍🍳", efficiency: 1 };
-                    chefs.push(newChef);
-                    availableLocation.chefsCount++;
+        // Появление посетителей
+        function generateVisitors() {
+            // Появление посетителей в локации с местами
+            locations.forEach(location => {
+                if (location.currentVisitors < location.maxSeats) {
+                    // Создаём нового посетителя
+                    location.currentVisitors++;
+                    visitors++;
+                    if (Math.random() < 0.1) {
+                        vipVisitor = true;  // 10% шанс на VIP клиента
+                    } else {
+                        vipVisitor = false;
+                    }
                     updateUI();
-                } else {
-                    alert("Нет места для найма повара в доступных локациях.");
                 }
-            } else {
-                alert("Недостаточно монет для найма повара.");
-            }
-        });
+            });
+        }
 
-        // Обслужить клиента
-        document.getElementById("serveCustomerBtn").addEventListener("click", () => {
-            if (visitors > 0)
+        // Запускаем таймер для появления посетителей

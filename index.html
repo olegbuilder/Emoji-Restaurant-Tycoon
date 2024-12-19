@@ -181,4 +181,28 @@
         document.getElementById("dailyRewardBtn").addEventListener("click", () => {
             coins += 20;
             updateUI();
-            alert("Вы
+            alert("Вы получили ежедневную награду: 20 монет!");
+        });
+
+        // Функция появления посетителей
+        function spawnVisitor() {
+            // Проверяем, есть ли свободные места
+            for (let i = 0; i < locations.length; i++) {
+                const location = locations[i];
+                if (location.currentVisitors < location.maxSeats) {
+                    location.currentVisitors++;
+                    visitors++;
+                    updateUI();
+                    break;
+                }
+            }
+
+            // Время появления посетителей - каждые 5 секунд
+            setTimeout(spawnVisitor, 5000);
+        }
+
+        // Запускаем появления посетителей
+        spawnVisitor();
+    </script>
+</body>
+    </html>

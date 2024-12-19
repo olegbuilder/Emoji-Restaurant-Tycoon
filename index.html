@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idle Restaurant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2.5em;
+        }
+        button {
+            font-size: 1.2em;
+            padding: 12px 20px;
+            margin: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .location {
+            font-size: 1.2em;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .location-disabled {
+            color: #ccc;
+        }
+        .level-bar {
+            margin: 20px 0;
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            width: 100%;
+        }
+        #levelBar {
+            background: green;
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Idle Restaurant</h1>
+        <p>Монеты: <span id="coins">10</span> | Уровень: <span id="level">1</span></p>
+        <div class="level-bar">
+            <div id="levelBar"></div>
+        </div>
+
+        <button id="serveCustomerBtn">Обслужить клиента (1 монета)</button>
+        <button id="buyCoinsBtn">Купить монеты (за 1$)</button>
+
+        <h2>Локации</h2>
+        <div id="location1" class="location">🎪 Базовая локация</div>
+        <div id="location2" class="location location-disabled">🏪 Локация "Вторая" (Уровень 3)</div>
+        <div id="location3" class="location location-disabled">🏯 Локация "Третья" (Уровень 6)</div>
+        <div id="location4" class="location location-disabled">🕌 Локация "Четвертая" (Уровень 10)</div>
+    </div>
+
+    <script>
+        let coins = 10;
+        let level = 1;
+        let experience = 0;
+
+        const coinsElement = document.getElementById("coins");
+        const levelElement = document.getElementById("level");
+        const levelBar = document.getElementById("levelBar");
+
+        // Обновление интерфейса
+        function updateUI() {
+            coinsElement.textContent = coins;
+            levelElement.textContent = level;
+            levelBar.style.width = `${(experience % 10) * 10}%`;
+        }
+
+        // Обслуживание клиента
+        document.getElementById("serveCustomerBtn").addEventListener("click", () => {
+            if (coins >= 1) {
+                coins -= 1;
+                experience += 1;
+                checkLevelUp();
+                updateUI();
+                alert("Вы обслужили клиента!");
+            } else {
+                alert("Недостаточно монет!");
+            }
+        });
+
+        // Функция повышения уровня
+        function checkLevelUp() {
+            if (experience >= 10) {
+                level += 1;
+                experience = 0; // Сброс опыта после повышения уровня
+                alert(`Вы достигли уровня ${level}!`);
+                unlockLocations();
+            }
+        }
+
+        // Разблокировка локаций
+        function unlockLocations() {
+            if (level >= 3) {
+                document.getElementById("location2").classList.remove("location-disabled");
+            }
+            if (level >= 6) {
+                document.getElementById("location3").classList.remove("location-disabled");
+            }
+            if (level >= 10) {
+                document.getElementById("location4").classList.remove("location-disabled");
+            }
+        }
+
+        // Покупка монет
+        document.getElementById("buyCoinsBtn").addEventListener("click", () => {
+            coins += 5;
+            updateUI();
+            alert("Вы купили 5 монет!");
+        });
+
+        // Инициализация
+        updateUI();
+    </script>
+
+</body>
+  </html>

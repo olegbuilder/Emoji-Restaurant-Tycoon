@@ -85,7 +85,7 @@
             <div id="levelBar"></div>
         </div>
         <button id="hireChefBtn">Нанять повара</button>
-        <button id="serveCustomerBtn">Обслужить клиента</button>
+        <button id="serveCustomerBtn" disabled>Обслужить клиента</button>
         <button id="dailyRewardBtn">Ежедневная награда</button>
 
         <div id="chefCollection" class="location">
@@ -116,6 +116,8 @@
         let chefs = [];
         let visitors = 0;
         let vipVisitor = false;
+        let currentVisitor = false;
+        let visitorTimer;
 
         // Локации
         const locations = [
@@ -141,6 +143,9 @@
             // Обновляем количество посетителей
             document.getElementById("visitorsCount").textContent = visitors;
             document.getElementById("vipStatus").textContent = vipVisitor ? "VIP клиент: Да" : "VIP клиент: Нет";
+
+            // Активируем кнопку обслуживания только если есть посетители
+            document.getElementById("serveCustomerBtn").disabled = !currentVisitor;
         }
 
         // Нанять повара
@@ -160,20 +165,18 @@
 
         // Обслужить клиента
         document.getElementById("serveCustomerBtn").addEventListener("click", () => {
-            const chance = Math.random();
-            if (chance > 0.5) {
-                coins += 10;
-                experience += 2;
-                visitors += 1;
-                if (Math.random() < 0.1) {
-                    vipVisitor = true;
+            if (currentVisitor) {
+                const chance = Math.random();
+                if (chance > 0.5) {
+                    coins += 10;
+                    experience += 2;
+                    visitors += 1;
+                    currentVisitor = false;
+                    updateUI();
+                    alert("Вы обслужили клиента!");
                 } else {
-                    vipVisitor = false;
+                    alert("Неудача! Попробуйте снова.");
                 }
-                updateUI();
-                alert("Вы обслужили клиента!");
-            } else {
-                alert("Неудача! Попробуйте снова.");
             }
         });
 
@@ -184,8 +187,22 @@
             alert("Вы получили ежедневную награду: 20 монет!");
         });
 
-        // Обновить интерфейс при загрузке
-        updateUI();
-    </script>
-</body>
-                                                 </html>
+        // Функция появления посетителей
+        function spawnVisitor() {
+            if (!currentVisitor) {
+                currentVisitor = true;
+                updateUI();
+            }
+        }
+
+        // Функция появления VIP клиента
+        function spawnVIP() {
+            if (!vipVisitor) {
+                vipVisitor = true;
+                alert("Прийшол вип клиент!");
+            }
+        }
+
+        // Таймер для появления посетителей и VIP клиента
+        setInterval(spawnVisitor, 10000); // Посетитель появляется каждые 10 секунд
+        setInterval(spawn

@@ -75,7 +75,7 @@
             <div id="levelBar"></div>
         </div>
         <div class="status">
-            <p>Посетители: <span id="visitorsCount">0</span> | VIP клиент: <span id="vipStatus">Нет</span></p>
+            <p>Посетители: <span id="visitorsCount">0</span> / <span id="maxSeats">10</span> | VIP клиент: <span id="vipStatus">Нет</span></p>
             <p>Поваров: <span id="chefsCount">0</span> / <span id="maxChefs">3</span></p>
         </div>
         <button id="serveCustomerBtn" disabled>Обслужить клиента</button>
@@ -83,18 +83,15 @@
         <button id="dailyRewardBtn">Ежедневная награда</button>
         <div id="locations">
             <h2>Локации</h2>
-            <div id="location1">🎪 Базовая локация</div>
-            <div id="location2">🏪 Локация "Гол"</div>
-            <div id="location3">🏯 Локация "Стадион"</div>
-            <div id="location4">🕌 Локация "Ресторан"</div>
+            <div id="currentLocation">🎪 Базовая локация</div>
         </div>
     </div>
     <script>
         const locations = [
-            { name: 'Базовая локация', level: 1, food: ['🥫', '🥘', '🧆'], maxChefs: 3, chefsCount: 0, maxSeats: 10, currentVisitors: 0 },
-            { name: 'Локация "Гол"', level: 3, food: ['🍱', '🍲', '🥗'], maxChefs: 5, chefsCount: 0, maxSeats: 5, currentVisitors: 0 },
-            { name: 'Локация "Стадион"', level: 6, food: ['🥣', '🍛', '🍲'], maxChefs: 7, chefsCount: 0, maxSeats: 7, currentVisitors: 0 },
-            { name: 'Локация "Ресторан"', level: 10, food: ['🍜', '🥮', '🥡'], maxChefs: 10, chefsCount: 0, maxSeats: 3, currentVisitors: 0 }
+            { name: '🎪 Базовая локация', level: 1, food: ['🥫', '🥘', '🧆'], maxChefs: 3, maxSeats: 10 },
+            { name: '🏪 Локация "Гол"', level: 3, food: ['🍱', '🍲', '🥗'], maxChefs: 5, maxSeats: 15 },
+            { name: '🏯 Локация "Стадион"', level: 6, food: ['🥣', '🍛', '🍲'], maxChefs: 7, maxSeats: 20 },
+            { name: '🕌 Локация "Ресторан"', level: 10, food: ['🍜', '🥮', '🥡'], maxChefs: 10, maxSeats: 25 }
         ];
 
         let coins = 10;
@@ -102,56 +99,63 @@
         let experience = 0;
         let visitors = 0;
         let vipVisitor = false;
+        let chefsCount = 0;
 
-        const maxChefs = locations[0].maxChefs;
-        let chefsCount = locations[0].chefsCount;
+        let currentLocation = locations[0];
 
-        // Обновление интерфейса
-        function updateUI() {
+        const updateUI = () => {
             document.getElementById("coins").textContent = coins;
             document.getElementById("level").textContent = level;
             document.getElementById("experience").textContent = experience;
             document.getElementById("levelBar").style.width = `${(experience % 10) * 10}%`;
 
             document.getElementById("visitorsCount").textContent = visitors;
+            document.getElementById("maxSeats").textContent = currentLocation.maxSeats;
             document.getElementById("vipStatus").textContent = vipVisitor ? "Да" : "Нет";
             document.getElementById("chefsCount").textContent = chefsCount;
-            document.getElementById("maxChefs").textContent = maxChefs;
+            document.getElementById("maxChefs").textContent = currentLocation.maxChefs;
+            document.getElementById("currentLocation").textContent = currentLocation.name;
 
             document.getElementById("serveCustomerBtn").disabled = visitors === 0;
-            document.getElementById("hireChefBtn").disabled = chefsCount >= maxChefs || coins < 5;
-        }
+            document.getElementById("hireChefBtn").disabled = chefsCount >= currentLocation.maxChefs || coins < 5;
+        };
 
-        // Появление клиентов
-        function generateVisitors() {
-            const location = locations[0]; // Для базовой локации
-            if (location.currentVisitors < location.maxSeats) {
-                location.currentVisitors++;
+        const generateVisitors = () => {
+            if (visitors < currentLocation.maxSeats) {
                 visitors++;
-                vipVisitor = Math.random() < 0.1; // 10% шанс на VIP клиента
+                if (Math.random() < 0.1) vipVisitor = true;
                 updateUI();
             }
-        }
+        };
 
-        // Таймер для клиентов
-        setInterval(() => {
-            generateVisitors();
-        }, 5000);
+        const changeLocation = () => {
+            for (let i = locations.length - 1; i >= 0; i--) {
+                if (level >= locations[i].level) {
+                    currentLocation = locations[i];
+                    break;
+                }
+            }
+            chefsCount = 0; // Сброс поваров при смене локации
+            updateUI();
+        };
 
-        // Обслуживание клиента
         document.getElementById("serveCustomerBtn").addEventListener("click", () => {
             if (visitors > 0) {
                 visitors--;
                 coins += vipVisitor ? 5 : 1;
                 experience++;
+                if (experience >= 10) {
+                    experience = 0;
+                    level++;
+                    changeLocation();
+                }
                 vipVisitor = false;
                 updateUI();
             }
         });
 
-        // Нанять повара
         document.getElementById("hireChefBtn").addEventListener("click", () => {
-            if (coins >= 5 && chefsCount < maxChefs) {
+            if (coins >= 5 && chefsCount < currentLocation.maxChefs) {
                 coins -= 5;
                 chefsCount++;
                 updateUI();
@@ -161,7 +165,6 @@
             }
         });
 
-        // Ежедневная награда
         let dailyRewardCollected = false;
         document.getElementById("dailyRewardBtn").addEventListener("click", () => {
             if (!dailyRewardCollected) {
@@ -173,6 +176,10 @@
                 alert("Вы уже забрали награду сегодня.");
             }
         });
+
+        setInterval(() => {
+            generateVisitors();
+        }, 5000);
 
         updateUI();
     </script>
